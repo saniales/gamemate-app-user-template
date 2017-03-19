@@ -32,7 +32,7 @@ export default class GamemateUser extends Component {
     return (
       <Navigator style={{flex : 1}}
         ref='nav'
-        initialRoute={{name : 'Game Owner Platform by Gamemate', component : LoginScene, index : 0}}
+        initialRoute={{name : 'Game Catalogue Platform by Gamemate', component : LoginScene, index : 0}}
         renderScene={this.renderScene}
         configureScene={this.configureScene}
         navigationBar={
@@ -57,14 +57,11 @@ export default class GamemateUser extends Component {
    }
 
   renderScene(route, navigator) {
-    if(route.name == 'Game Owner Platform by Gamemate') {
+    if(route.name == 'Game Catalogue Platform by Gamemate') {
       return <LoginScene navigator={navigator} />;
     }
-    else if (route.name == 'Your uploaded Games') {
+    else if (route.name == 'The games\' catalogue') {
       return <GameListScene /*newGame={route.passProps != undefined ? route.passProps.newGame : undefined}*/ navigator={navigator} />;
-    }
-    else if (route.name == 'New Game') {
-      return <GameDetailScene navigator={navigator} />;
     }
     else if (route.name == "Game Detail" && route.passProps != undefined) {
       return <GameDetailScene game={route.passProps.game} navigator={navigator} />;

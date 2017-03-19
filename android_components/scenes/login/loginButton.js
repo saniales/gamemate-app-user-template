@@ -32,14 +32,14 @@ export class LoginButton extends Component {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          Type:'GameOwnerAuth',
+          Type:'UserAuth',
           Email: username,
           Password: password,
           API_Token: Application.APIToken
         })
       };
       //alert(JSON.stringify(request));
-      let response = fetch('http://gamemate.di.unito.it:8080/owner/auth', request)
+      let response = fetch('http://gamemate.di.unito.it:8080/user/auth', request)
       .then((response) => response.json())
       .then((responseJson) => {
         //console.warn(JSON.stringify(responseJson));
@@ -48,7 +48,7 @@ export class LoginButton extends Component {
             this.setState({loading : false});
             ToastAndroid.show('Cannot login : ' + responseJson.ErrorMessage, ToastAndroid.SHORT)
             break;
-          case 'GameOwnerSessionToken':
+          case 'UserSessionToken':
             Application.SessionToken = responseJson.SessionToken;
             //save token in realm and push.
             /*

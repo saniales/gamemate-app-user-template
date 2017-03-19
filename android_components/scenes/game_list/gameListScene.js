@@ -24,7 +24,7 @@ const errorRow = [{
 
 const emptyGamesRow = [{
   ID : -1,
-  Name: 'Hello. It looks like you haven\'t added a game yet, wanna add one now? Click the button below.',
+  Name: 'Hello. It looks like the catalogue is empty, want to wait until some vendor adds one?',
   Description : '',
   MaxPlayers : -1
 }];
@@ -84,12 +84,12 @@ export class GameListScene extends Component {
         SessionToken : Application.SessionToken
       })
     };
-    fetch('http://gamemate.di.unito.it:8080/owner/game/list', request)
+    fetch('http://gamemate.di.unito.it:8080/user/game/list/all', request)
         .then((response) => response.json())
         .then((responseJson) => {
           //console.warn(JSON.stringify(responseJson));
           switch (responseJson.Type) {
-            case 'GameOwnerGameList':
+            case 'UserGameList':
               const emptyList = responseJson.Games.length == 0,
                     rows = emptyList ? emptyGamesRow : responseJson.Games;
               this.setState({
