@@ -3,7 +3,7 @@ import dismissKeyboard from 'dismissKeyboard';
 import { StyleSheet, Navigator, ToastAndroid, View } from 'react-native';
 import { LoadingButton } from '../../buttons/loadingButton.js';
 import { Application } from '../../../shared_components/application.js';
-import { ApiListScene } from '../game_list/gameListScene.js';
+import { GameListScene } from '../game_list/gameListScene.js';
 import { LoadingSpinner } from '../../misc/loadingSpinner.js';
 
 
@@ -32,17 +32,18 @@ export class RegisterButton extends Component {
           'Content-Type' : 'application/json'
         },
         body: JSON.stringify({  //server/models/developer/registration
-          Type : 'GameOwnerRegistration',
-          Email: username,
+          Type : 'UserRegistration',
+          Username: username,
           Password: password,
           API_Token: Application.APIToken
         })
       };
-      let response = fetch('http://gamemate.di.unito.it:8080/owner/register', request)
+      let response = fetch('http://gamemate.di.unito.it:8080/user/register', request)
           .then((response) => response.json())
           .then((responseJson) => {
+            try {
             switch (responseJson.Type) {
-              case 'GameOwnerSessionToken':
+              case 'UserSessionToken':
                 Application.SessionToken = responseJson.SessionToken;
                 this.setState({loading : false});
                 this.props.navigator.push({
@@ -59,9 +60,12 @@ export class RegisterButton extends Component {
                 ToastAndroid.show('Unknown error, retry later', ToastAndroid.LONG);
                 break;
             }
+          } catch(ex) {
+            console.warn(ex.message);
+          }
           }).catch((error) => {
             this.setState({loading : false});
-            ToastAndroid.show('Please check your network connection ', ToastAndroid.SHORT);
+            ToastAndroid.show('Unknown error, retry later', ToastAndroid.SHORT);
             console.warn(JSON.stringify(error));
           });
     }

@@ -59,7 +59,7 @@ class LoginForm extends Component {
           style={styles.textInput}
           returnKeyType="done"/>
         <LoginButton navigator={navigator} username={username} password={password}/>
-        <RegisterButton navigator={navigator}  username={username} password={password}/>
+        <RegisterButton navigator={navigator} username={username} password={password}/>
       </View>
     );
   }

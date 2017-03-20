@@ -33,7 +33,7 @@ export class LoginButton extends Component {
         },
         body: JSON.stringify({
           Type:'UserAuth',
-          Email: username,
+          Username: username,
           Password: password,
           API_Token: Application.APIToken
         })
@@ -90,7 +90,6 @@ export class LoginButton extends Component {
         console.warn(JSON.stringify(error));
       });
     } else {
-      this.setState({loading : false});
       ToastAndroid.show('Please fill username and password fields', ToastAndroid.SHORT);
     }
     dismissKeyboard();
