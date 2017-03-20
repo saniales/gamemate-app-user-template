@@ -24,7 +24,7 @@ const errorRow = [{
 
 const emptyGamesRow = [{
   ID : -1,
-  Name: 'Hello. It looks like the catalogue is empty, want to wait until some vendor adds one?',
+  Name: 'Hello. It looks like the catalogue is empty, please wait until some vendor adds one',
   Description : '',
   MaxPlayers : -1
 }];
@@ -35,8 +35,6 @@ export class GameListScene extends Component {
   constructor(props) {
     super(props);
     this.renderRow = this._renderRow.bind(this);
-    this.showNewGameScene = this._showNewGameScene.bind(this);
-    this.removeHandler = this._removeHandler.bind(this);
   }
 
   componentWillMount() {
@@ -79,7 +77,7 @@ export class GameListScene extends Component {
         'Content-Type' : 'application/json'
       },
       body : JSON.stringify({
-        Type : 'GameOwnerGameList',
+        Type : 'UserGameList',
         API_Token : Application.APIToken,
         SessionToken : Application.SessionToken
       })
@@ -87,9 +85,9 @@ export class GameListScene extends Component {
     fetch('http://gamemate.di.unito.it:8080/user/game/list/all', request)
         .then((response) => response.json())
         .then((responseJson) => {
-          //console.warn(JSON.stringify(responseJson));
           switch (responseJson.Type) {
             case 'UserGameList':
+            console.warn(JSON.stringify(responseJson));
               const emptyList = responseJson.Games.length == 0,
                     rows = emptyList ? emptyGamesRow : responseJson.Games;
               this.setState({
@@ -128,13 +126,6 @@ export class GameListScene extends Component {
         });
   }
 
-  _showNewGameScene() {
-    this.props.navigator.push({
-      name : "New Game",
-      component : GameDetailScene
-    });
-  }
-
   render() {
     const { loading, adding, datasource } = this.state;
     let partial = [];
@@ -153,13 +144,6 @@ export class GameListScene extends Component {
           />
       );
     }
-    partial.push(
-      <LoadingButton style={[styles.buttonNormal, {height:100, borderRadius:0}]}
-                     loading={adding}
-                     underlayColor='gray'
-                     onPress={this.showNewGameScene}
-                     text='Add a new game'/>
-    );
     return (
       <View style={styles.container}>
         {partial}
@@ -171,7 +155,6 @@ export class GameListScene extends Component {
     return (
       <TokenRow game={singleGame}
                 isDummy={this.state.isDummy}
-                removeHandler={this.removeHandler}
                 navigator={this.props.navigator}/>
     );
   }
@@ -180,103 +163,94 @@ export class GameListScene extends Component {
 class TokenRow extends Component {
   constructor(props) {
     super(props);
-    this.onRemoving = this._onRemoving.bind(this);
     this.showDetail = this._showDetail.bind(this);
-    this.removeGame = this._removeGame.bind(this);
+    this.sendAction = this._sendAction.bind(this);
   }
 
   componentWillMount() {
+    const { game } = this.props;
     this.setState({
-      removing : false
+      game : game,
+      acting : false
     });
   }
 
-  _onRemoving() {
-    Alert.alert(
-      'You are removing the game : ' + this.props.game.Name,
-      'Are you sure?',
-      [
-        {text : "Yes, DELETE PERMANENTLY", onPress : this.removeGame},
-        {text : "No, go back"}
-      ]
-    );
-  }
-
-  _removeGame() {
-      this.setState({removing : true});
-      const request = {
-        method : 'POST',
-        headers : {
-          'Accept' : 'application/json',
-          'Content-Type' : 'application/json'
-        },
-        body : JSON.stringify({
-          Type : 'GameOwnerRemoveGame',
-          API_Token : Application.APIToken,
-          SessionToken : Application.SessionToken,
-          GameID : parseInt(this.props.game.ID)
-        })
-      };
-      //alert(JSON.stringify(JSON.parse(request.body)))
-      fetch('http://gamemate.di.unito.it:8080/owner/game/remove', request)
+  _sendAction() {
+    const { game } = this.state,
+    request = {
+      method : 'POST',
+      headers : {
+        'Accept' : 'application/json',
+        'Content-Type' : 'application/json'
+      },
+      body : JSON.stringify({
+        Type : 'GameAction',
+        API_Token : Application.APIToken,
+        SessionToken : Application.SessionToken,
+        GameID : parseInt(game.ID),
+        UserID : -1,
+        Action : !game.Enabled
+      })
+    };
+    this.setState({acting:true});
+    fetch("http://gamemate.di.unito.it:8080/game/action", request)
       .then((response) => response.json())
       .then((responseJson) => {
-        //alert(JSON.stringify(responseJson));
-        switch (responseJson.Type) {
-          case 'GameOwnerRemoveGame':
-            ToastAndroid.show('Game successfully deleted', ToastAndroid.SHORT);
-            this.props.removeHandler(this.props.game);
+        switch(responseJson.Type) {
+          case "GameAction":
+            game.Enabled = !game.Enabled;
             break;
-          case 'ErrorDetail':
-            ToastAndroid.show('Error : ' + responseJson.ErrorMessage, ToastAndroid.SHORT);
+          case "ErrorDetail" :
+            ToastAndroid.show("Action unsuccessfull : " + responseJson.ErrorMessage, ToastAndroid.SHORT);
             break;
           default:
-            ToastAndroid.show('Unknown error while deleting, retry later. ', ToastAndroid.SHORT);
+            ToastAndroid.show("Unknown error, retry", ToastAndroid.SHORT);
             break;
         }
-        this.setState({removing : false});
+        this.setState({acting:false});
       }).catch((error) => {
-        ToastAndroid.show('Unknown error while handling response, retry later', ToastAndroid.SHORT);
-        this.setState({removing : false});
-        console.warn(JSON.stringify(error));
+        ToastAndroid.show("Unknown response, retry", ToastAndroid.SHORT);
+        this.setState({acting:false});
+        console.warn(JSON.stringify(error.message));
       });
   }
 
   _showDetail() {
-    this.props.navigator.push({
+    const { navigator, game } = this.props;
+    navigator.push({
       name : 'Game Detail',
       component : GameDetailScene,
       passProps : {
-        game : this.props.game
+        game : game
       }
     });
   }
 
   render() {
-    const { game, isDummy } = this.props,
-          { removing } = this.state,
+    const { isDummy } = this.props,
+          { game, acting } = this.state,
           visible = isDummy ? 0 : 1;
     let partial = [];
     partial.push(
       <Text style={styles.rowText}>
-        {game.ID > 0 ? game.ID + " : " : ""}{game.Name}
+        {game.Name}
       </Text>
     );
     if(!isDummy) {
+      const enabledText = game.Enabled == true ? "Disable" : "Enable";
       partial.push(
-        <View style={{flex:2, flexDirection:'row'}} //TODO: verify
-          >
+        <View style={{flex:1, flexDirection:'row'}}>
           <ToggleButton
-            style={[styles.buttonNormal, {flex:2, opacity : visible, margin:5}]} //TODO: verify
+            style={[styles.buttonNormal, {flex:2, opacity : visible, margin:5}]}
             underlayColor='gray'
             onPress={this.showDetail}
             text='Detail' />
           <LoadingButton
-            loading={removing}
+            loading={acting}
             style={[styles.buttonNormal, {flex:2, opacity : visible, margin:5}]}
-            underlayColor='gray'
-            onPress={this.onRemoving}
-            text='Remove' />
+            underlayColor="gray"
+            onPress={this.sendAction}
+            text={enabledText} />
         </View>
       );
     }

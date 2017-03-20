@@ -73,7 +73,7 @@ export class LoginButton extends Component {
             */
             this.setState({loading : false});
             this.props.navigator.push({
-              name : 'Your uploaded Games',
+              name : 'The games\' catalogue',
               component : GameListScene,
             });
             break;
@@ -83,6 +83,7 @@ export class LoginButton extends Component {
             console.warn(JSON.stringify(response));
             break;
         }
+        this.setState({loading : false});
       })
       .catch((error) => {
         this.setState({loading : false});

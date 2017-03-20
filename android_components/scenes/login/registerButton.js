@@ -45,24 +45,19 @@ export class RegisterButton extends Component {
             switch (responseJson.Type) {
               case 'UserSessionToken':
                 Application.SessionToken = responseJson.SessionToken;
-                this.setState({loading : false});
                 this.props.navigator.push({
-                  name : 'Your uploaded Games',
+                  name : 'The games\' catalogue',
                   component : GameListScene,
                 });
                 break;
               case 'ErrorDetail':
-                this.setState({loading : false});
                 ToastAndroid.show('Error : ' + responseJson.ErrorMessage, ToastAndroid.LONG);
                 break;
               default:
-                this.setState({loading : false});
                 ToastAndroid.show('Unknown error, retry later', ToastAndroid.LONG);
                 break;
-            }
-          } catch(ex) {
-            console.warn(ex.message);
-          }
+            }} catch(ex) {console.warn(ex.message);}
+            this.setState({loading : false});
           }).catch((error) => {
             this.setState({loading : false});
             ToastAndroid.show('Unknown error, retry later', ToastAndroid.SHORT);

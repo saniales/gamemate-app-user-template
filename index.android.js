@@ -12,7 +12,7 @@ import {
   ToastAndroid
 } from 'react-native';
 
-//console.disableYellowBox = true;
+console.disableYellowBox = true;
 
 export default class GamemateUser extends Component {
   constructor(props) {
@@ -32,7 +32,7 @@ export default class GamemateUser extends Component {
     return (
       <Navigator style={{flex : 1}}
         ref='nav'
-        initialRoute={{name : 'Game Catalogue Platform by Gamemate', component : LoginScene, index : 0}}
+        initialRoute={{name : 'Game Catalogue by Gamemate', component : LoginScene, index : 0}}
         renderScene={this.renderScene}
         configureScene={this.configureScene}
         navigationBar={
@@ -57,7 +57,7 @@ export default class GamemateUser extends Component {
    }
 
   renderScene(route, navigator) {
-    if(route.name == 'Game Catalogue Platform by Gamemate') {
+    if(route.name == 'Game Catalogue by Gamemate') {
       return <LoginScene navigator={navigator} />;
     }
     else if (route.name == 'The games\' catalogue') {
