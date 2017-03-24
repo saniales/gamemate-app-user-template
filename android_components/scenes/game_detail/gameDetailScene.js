@@ -68,6 +68,7 @@ export class GameDetailScene extends Component {
       .then((responseJson) => {
         switch(responseJson.Type) {
           case "GameAction":
+            game.Enabled = !game.Enabled;
             break;
           case "ErrorDetail" :
             ToastAndroid.show("Action unsuccessfull : " + responseJson.ErrorMessage, ToastAndroid.SHORT);
